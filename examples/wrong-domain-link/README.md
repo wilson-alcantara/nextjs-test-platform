@@ -1,34 +1,111 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Status
+Pending
 
-## Getting Started
+https://github.com/vercel/next.js/issues/25402
 
-First, run the development server:
+### What version of Next.js are you using?
 
-```bash
-npm run dev
-# or
-yarn dev
+10.0.5
+
+### What version of Node.js are you using?
+
+15.6.0
+
+### What browser are you using?
+
+Chrome
+
+### What operating system are you using?
+
+macOS
+
+### How are you deploying your application?
+
+Other platform
+
+### Describe the Bug
+
+Getting incorrect `href` (domain and locale) when there's a `i18n.domains` config in `next.config.js`.
+
+It started breaking at version `10.0.5` and still happening at version `10.2.3-canary.0`.
+
+
+### Expected Behavior
+
+I expect the link to have the correct domain and locale.
+
+### To Reproduce
+
+1. Configure domains in `next.config.js` as written below.
+
+```javascript
+// next.config.js
+module.exports = {
+  env: "development",
+  i18n: {
+    localeDetection: false,
+    locales: ["en", "ar"],
+    defaultLocale: "en",
+    domains: [
+      {
+        domain: "ae.example.com",
+        defaultLocale: "en",
+      },
+      {
+        domain: "sa.example.com",
+        defaultLocale: "ar",
+      },
+      {
+        domain: "sg.example.com",
+        defaultLocale: "ar",
+      },
+    ],
+  },
+};
+```
+2.  The first link will have an href `ae.example.com` while the second link will have `sa.example.com` (where it should be `ae.example.com/ar`)
+```javascript
+// ae.example.com
+<div>
+  <Link
+    href={{
+      pathname: router.pathname,
+      query: router.query,
+    }}
+    locale="en"
+  >
+    <a>English</a>
+  </Link>
+</div>
+
+<div>
+  <Link
+    href={{
+      pathname: router.pathname,
+      query: router.query,
+    }}
+    locale="ar"
+  >
+    <a>Arabic</a>
+  </Link>
+</div>
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+I see a pattern where when you assign `locale` in the `<Link />` (i.e `ar` from my example above), it uses the `domain` of the first item that matches its `defaultLocale`. From the config below, it's `sa.example.com`.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```javascript
+domains: [
+  {
+    domain: "ae.example.com",
+    defaultLocale: "en",
+  },
+  {
+    domain: "sa.example.com",
+    defaultLocale: "ar",
+  },
+  {
+    domain: "sg.example.com",
+    defaultLocale: "ar",
+  },
+],
+```
